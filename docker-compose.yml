@@ -1,0 +1,161 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: keycloak-postgres
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0
+    container_name: keycloak
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: password
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: true
+      KC_METRICS_ENABLED: true
+      KC_HOSTNAME_STRICT: false
+      KC_HTTP_ENABLED: true
+      KC_HOSTNAME_STRICT_HTTPS: false
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command:
+      - start-dev
+      - --import-realm
+    volumes:
+      - ./realm-export.json:/opt/keycloak/data/import/realm-export.json
+    networks:
+      - app-network
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    environment:
+      MINIO_ROOT_USER: minio_access_key
+      MINIO_ROOT_PASSWORD: minio_secret_key
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - app-network
+
+  createbuckets:
+    image: minio/mc
+    container_name: minio-createbuckets
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until (/usr/bin/mc config host add myminio http://minio:9000 minio_access_key minio_secret_key) do echo '...waiting...' && sleep 1; done;
+      /usr/bin/mc mb myminio/audio;
+      /usr/bin/mc anonymous set download myminio/audio;
+      exit 0;
+      "
+    networks:
+      - app-network
+
+  # MongoDB service with no authentication
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    command: ["mongod", "--bind_ip_all"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    networks:
+      - app-network
+
+  # Service to initialize MongoDB and create the audio collection
+  mongo-init:
+    image: mongo:latest
+    container_name: mongo-init
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      echo 'Waiting for MongoDB to be ready...'
+      sleep 5
+      mongosh mongodb://mongodb:27017/admin --eval '
+        db = db.getSiblingDB(\"audio_db\");
+        db.createCollection(\"audio\");
+        print(\"Collection audio created successfully\");
+      '
+      "
+    restart: on-failure
+    networks:
+      - app-network
+
+  frontend:
+    container_name: audio-web-app
+    build:
+      context: ./frontend/audio-web-application
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend/audio-web-application:/app
+      - /app/node_modules
+    depends_on:
+      - keycloak
+    networks:
+      - app-network
+
+  backend:
+    container_name: audio-api
+    build:
+      context: ./backend/audio-backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend/audio-backend:/app
+      - /app/node_modules
+    depends_on:
+      - postgres
+      - keycloak
+      - minio
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+  minio_data:
+  mongodb_data:
+
+networks:
+  app-network:
+    driver: bridge
