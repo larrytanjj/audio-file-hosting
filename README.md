@@ -23,13 +23,16 @@ The application consists of several key components:
 ```bash
 # Clone the repository
 git clone https://github.com/larrytanjj/audio-file-hosting.git
-cd audio-storage-app
+cd audio-file-hosting
 
 # Start all services
 docker-compose up -d
 ```
 
 Once all containers are running, you can access the application at http://localhost:3000
+
+## System Architecture
+![Alt text](diagram.png)
 
 ## Component Access Information
 
@@ -126,11 +129,3 @@ This setup is configured for development purposes:
 - Keycloak is running in development mode
 - MongoDB has no authentication enabled
 - Passwords are set in plain text in the docker-compose file
-
-## License
-
-[Add your license information here]
-
-## Contributing
-
-[Add your contribution guidelines here]
