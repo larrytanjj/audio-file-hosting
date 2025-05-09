@@ -22,7 +22,7 @@ The application consists of several key components:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/audio-storage-app.git
+git clone https://github.com/larrytanjj/audio-file-hosting.git
 cd audio-storage-app
 
 # Start all services
@@ -126,32 +126,6 @@ This setup is configured for development purposes:
 - Keycloak is running in development mode
 - MongoDB has no authentication enabled
 - Passwords are set in plain text in the docker-compose file
-
-For production use, consider:
-- Adding proper authentication to MongoDB
-- Using environment variables for sensitive information
-- Setting up HTTPS for all services
-- Configuring Keycloak for production use
-
-## Troubleshooting
-
-### Services Not Starting
-Check container logs:
-```bash
-docker-compose logs <service-name>
-```
-
-### Connection Issues
-Ensure all services are healthy:
-```bash
-docker-compose ps
-```
-
-### Data Persistence Issues
-Check volume mounts:
-```bash
-docker volume ls
-```
 
 ## License
 
