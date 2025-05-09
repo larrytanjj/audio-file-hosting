@@ -34,6 +34,82 @@ Once all containers are running, you can access the application at http://localh
 ## System Architecture
 ![Alt text](diagram.png)
 
+# 🎵 File Upload API
+
+This API allows users to upload, list, and delete audio files. Each endpoint requires JWT-based authentication.
+
+## Base URL
+
+```
+/file
+```
+
+---
+
+## 🔐 Authentication
+
+All endpoints require a valid JWT token passed in the `Authorization` header:
+
+```
+Authorization: Bearer <token>
+```
+
+---
+
+## 📥 Upload Audio File
+**POST** `/file/upload`
+Uploads an audio file with additional metadata.
+### Headers
+```
+Authorization: Bearer <JWT_TOKEN>
+Content-Type: multipart/form-data
+```
+### Form Data
+| Field        | Type   | Description             |
+|--------------|--------|-------------------------|
+| `file`       | file   | Audio file to upload    |
+| `title`      | string | Title of the file       |
+| `description`| string | Description (optional)  |
+| `category`   | string | File category (e.g., podcast, music) |
+### Example
+```bash
+curl -X POST http://localhost:5000/file/upload \
+  -H "Authorization: Bearer <JWT_TOKEN>" \
+  -F "file=@sample.mp3" \
+  -F "title=My Audio" \
+  -F "description=A short test" \
+  -F "category=music"
+```
+
+---
+## 📄 Get Uploaded Files
+**GET** `/file/`
+Retrieves a list of uploaded audio files for the authenticated user.
+### Headers
+```
+Authorization: Bearer <JWT_TOKEN>
+```
+### Response
+Returns an array of file metadata.
+---
+
+## ❌ Delete Audio File
+**DELETE** `/file/:id`
+Deletes a specific audio file belonging to the authenticated user.
+### URL Parameters
+| Param | Description      |
+|-------|------------------|
+| `id`  | ID of the file to delete |
+### Headers
+```
+Authorization: Bearer <JWT_TOKEN>
+```
+### Example
+```bash
+curl -X DELETE http://localhost:5000/file/abc123 \
+  -H "Authorization: Bearer <JWT_TOKEN>"
+```
+
 ## Component Access Information
 
 ### Frontend Application
