@@ -102,7 +102,7 @@ const AudioFileHostingApp: React.FC = () => {
     // Placeholder for API call
     try {
       // In a real app, replace with actual API call
-      const response = await fetch('http://localhost:5000/file', {
+      const response = await fetch('http://localhost:4002/file', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('kc_access_token')}`
@@ -160,7 +160,7 @@ const AudioFileHostingApp: React.FC = () => {
     formData.append('description', uploadForm.description);
     formData.append('category', uploadForm.category);
 
-    await fetch('http://localhost:5000/file/upload', {
+    await fetch('http://localhost:4002/file/upload', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('kc_access_token')}`
@@ -197,7 +197,7 @@ const AudioFileHostingApp: React.FC = () => {
 
   const deleteAudioFile = async (fileId: string) => {
     try {
-      await fetch(`http://localhost:5000/file/${fileId}`, {
+      await fetch(`http://localhost:4002/file/${fileId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('kc_access_token')}`

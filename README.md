@@ -73,7 +73,7 @@ Content-Type: multipart/form-data
 | `category`   | string | File category (e.g., podcast, music) |
 ### Example
 ```bash
-curl -X POST http://localhost:5000/file/upload \
+curl -X POST http://localhost:4002/file/upload \
   -H "Authorization: Bearer <JWT_TOKEN>" \
   -F "file=@sample.mp3" \
   -F "title=My Audio" \
@@ -106,7 +106,7 @@ Authorization: Bearer <JWT_TOKEN>
 ```
 ### Example
 ```bash
-curl -X DELETE http://localhost:5000/file/abc123 \
+curl -X DELETE http://localhost:4002/file/abc123 \
   -H "Authorization: Bearer <JWT_TOKEN>"
 ```
 

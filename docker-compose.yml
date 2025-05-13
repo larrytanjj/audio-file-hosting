@@ -140,7 +140,7 @@ services:
       context: ./backend/audio-backend
       dockerfile: Dockerfile
     ports:
-      - "5000:5000"
+      - "4002:4002"
     volumes:
       - ./backend/audio-backend:/app
       - /app/node_modules
